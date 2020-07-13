@@ -9,7 +9,7 @@
 ### 1. 哈希冲突
        然而万事无完美，如果两个不同的元素，通过哈希函数得出的实际存储地址相同怎么办？也就是说，当我们对某个元素进行哈希运算，得到一个存储地址，然后要进行插入的时候，发现已经被其他元素占用了，其实这就是所谓的哈希冲突，也叫哈希碰撞。前面我们提到过，哈希函数的设计至关重要，好的哈希函数会尽可能地保证 计算简单和散列地址分布均匀,但是，我们需要清楚的是，数组是一块连续的固定长度的内存空间，再好的哈希函数也不能保证得到的存储地址绝对不发生冲突。那么哈希冲突如何解决呢？哈希冲突的解决方案有多种:开放定址法（发生冲突，继续寻找下一块未被占用的存储地址），再散列函数法，链地址法，而HashMap即是采用了链地址法，也就是数组+链表的方式。
 
-### 2.HashMap的实现原理
+### 2. HashMap的实现原理
     HashMap的主干是一个Entry数组。Entry是HashMap的基本组成单元，每一个Entry包含一个key-value键值对。（其实所谓Map其实就是保存了两个对象之间的映射关系的一种集合）
 ~~~
     //HashMap的主干数组，可以看到就是一个Entry数组，初始值为空数组{}，主干数组的长度一定是2的次幂。
@@ -200,7 +200,7 @@ void addEntry(int hash, K key, V value, int bucketIndex) {
 
 通过以上代码能够得知，**当发生哈希冲突并且size大于阈值的时候，需要进行数组扩容，扩容时，需要新建一个长度为之前数组2倍的新的数组，然后将当前的Entry数组中的元素全部传输过去，扩容后的新数组长度为之前的2倍，所以扩容相对来说是个耗资源的操作**。
 
-### 4、为何HashMap的数组长度一定是2的次幂？
+### 4. 为何HashMap的数组长度一定是2的次幂？
 
 我们来继续看上面提到的resize方法
 
@@ -296,7 +296,7 @@ final Entry<K,V> getEntry(Object key) {
 
 可以看出，get方法的实现相对简单，key(hashcode)–>hash–>indexFor–>最终索引位置，找到对应位置table[i]，再查看是否有链表，遍历链表，通过key的equals方法比对查找对应的记录。要注意的是，有人觉得上面在定位到数组位置之后然后遍历链表的时候，e.hash == hash这个判断没必要，仅通过equals判断就可以。其实不然，试想一下，如果传入的key对象重写了equals方法却没有重写hashCode，而恰巧此对象定位到这个数组位置，如果仅仅用equals判断可能是相等的，但其hashCode和当前对象不一致，这种情况，根据Object的hashCode的约定，不能返回当前对象，而应该返回null，后面的例子会做出进一步解释。
 
-## 5.重写equals方法需同时重写hashCode方法
+## 5. 重写equals方法需同时重写hashCode方法
 
 
 最后我们再聊聊老生常谈的一个问题，各种资料上都会提到，“重写equals时也要同时覆盖hashcode”，我们举个小例子来看看，如果重写了equals而不重写hashcode会发生什么样的问题
@@ -356,12 +356,223 @@ JDK1.8在JDK1.7的基础上针对增加了红黑树来进行优化。即当链�
 
 ## 二 、二叉树，二叉搜索树
 
+    Linked List是特殊化的Tree (只有一个子节点)
+    Tree是特殊化的Graph
+    
     1.二叉树的前序遍历，中序遍历，后续遍历均为O(n) 节点个数
     2.前序(Pre-order) : 根-左-右 中序(In-order) :左-根-右 后续(Post-order) : 左-右-根
 
-### 1.二叉搜索树
+### 1. 二叉搜索树
     具备性质：一颗空树或者具有下列性质的二叉树：
     1.左子树上所有节点的值均小于它的根节点的值；
-    2.右子树上有所节点的值均大于它的根节点的值；
+    2.右子树上所有节点的值均大于它的根节点的值；
     3.以此类推左，右子树也分别为二叉查找树。
     中序遍历：升序遍历  
+    
+    4. 删除节点---- 找第一个大于它的节点来替换
+    5. 元素查找时间O(logn) , 插入元素时间O(logn), 删除元素时间O(logn)
+
+## 三、堆， 二叉堆
+
+    Heap: 可以迅速找到一个队中的最大或最小的数据结构；
+    将根节点最大的堆叫做大顶或大根堆，根节点小1的堆叫做小顶堆或小根堆。
+    
+    假如是大顶堆，则常见操作（API）
+    
+    find-max (O(1)) , delete-max(O(1)), insert(create) O(logN)or O(1)
+    
+    以下是几种堆的时间复杂度
+
+![2313c12661ed43ba88a7ca6491e93479](picture.assert/2313c12661ed43ba88a7ca6491e93479.jpg)
+
+    二叉堆（大顶）它满足下列性质：
+    
+    [性质1]是一颗完全树。（除了最下面叶子节点不是一种丰满态之外，其他均是满状态）
+    [性质2]树中任意节点的值总是 >= 其子节点的值；
+
+### 1. 二叉堆的实现细节
+
+    1.二叉堆一般都通过 “数组” 来实现的
+    2.假设“第一个元素”在数组的索引i的话，则父节点和子节点的位置关系如下：
+    (01)索引为i的左儿子的索引是（2*i + 1）
+    (02)索引为i的右儿子的索引是（2*i + 2）
+    (03)索引为i的父节点的索引是floor((i - 1) / 2);
+
+![20200706121024](picture.assert/20200706121024.png)
+
+### 2. 二叉堆的插入
+    1.新元素一律先插入到堆的尾部
+    2.依次向上调整整个堆的结构（一直到根即可）
+    HeapityUp
+
+![20200706133617](picture.assert/20200706133617.png)
+
+![20200706133641](picture.assert/20200706133641.png)
+
+![20200706133601](picture.assert/20200706133601.png)
+
+### 3. 二叉堆的删除（MAX）
+    1.将堆尾元素替换到顶部（即堆顶被替换删除）
+    2.依次从根部向下调整整个堆的结构（一直到堆尾即可）
+    HeapityDown
+
+
+### 4. 二叉堆代码简单实现
+~~~java
+// Java
+
+import java.util.Arrays;
+import java.util.NoSuchElementException;
+
+
+public class BinaryHeap {
+
+
+    private static final int d = 2;
+    private int[] heap;
+    private int heapSize;
+
+
+    /**
+     * This will initialize our heap with default size.
+     */
+    public BinaryHeap(int capacity) {
+        heapSize = 0;
+        heap = new int[capacity + 1];
+        Arrays.fill(heap, -1); //类似c语言中的memset初始化
+    }
+
+
+    public boolean isEmpty() {
+        return heapSize == 0;
+    }
+
+
+    public boolean isFull() {
+        return heapSize == heap.length;
+    }
+
+
+
+
+    private int parent(int i) {
+        return (i - 1) / d;
+    }
+
+
+    private int kthChild(int i, int k) {
+        return d * i + k;
+    }
+
+
+    /**
+     * Inserts new element in to heap
+     * Complexity: O(log N)
+     * As worst case scenario, we need to traverse till the root
+     */
+    public void insert(int x) {
+        if (isFull()) {
+            throw new NoSuchElementException("Heap is full, No space to insert new element");
+        }
+        heap[heapSize] = x;
+        heapSize ++;
+        heapifyUp(heapSize - 1);
+    }
+
+
+    /**
+     * Deletes element at index x
+     * Complexity: O(log N)
+     */
+    public int delete(int x) {
+        if (isEmpty()) {
+            throw new NoSuchElementException("Heap is empty, No element to delete");
+        }
+        int maxElement = heap[x];
+        heap[x] = heap[heapSize - 1];
+        heapSize--;
+        heapifyDown(x);
+        return maxElement;
+    }
+
+
+    /**
+     * Maintains the heap property while inserting an element.
+     */
+    private void heapifyUp(int i) {
+        int insertValue = heap[i];
+        while (i > 0 && insertValue > heap[parent(i)]) {
+            heap[i] = heap[parent(i)];
+            i = parent(i);
+        }
+        heap[i] = insertValue;
+    }
+
+
+    /**
+     * Maintains the heap property while deleting an element.
+     */
+    private void heapifyDown(int i) {
+        int child;
+        int temp = heap[i];
+        while (kthChild(i, 1) < heapSize) {
+            child = maxChild(i);
+            if (temp >= heap[child]) {
+                break;
+            }
+            heap[i] = heap[child];
+            i = child;
+        }
+        heap[i] = temp;
+    }
+
+
+    private int maxChild(int i) {
+        int leftChild = kthChild(i, 1);
+        int rightChild = kthChild(i, 2);
+        return heap[leftChild] > heap[rightChild] ? leftChild : rightChild;
+    }
+
+
+    /**
+     * Prints all elements of the heap
+     */
+    public void printHeap() {
+        System.out.print("nHeap = ");
+        for (int i = 0; i < heapSize; i++)
+            System.out.print(heap[i] + " ");
+        System.out.println();
+    }
+
+
+    /**
+     * This method returns the max element of the heap.
+     * complexity: O(1)
+     */
+    public int findMax() {
+        if (isEmpty())
+            throw new NoSuchElementException("Heap is empty.");
+        return heap[0];
+    }
+
+
+    public static void main(String[] args) {
+        BinaryHeap maxHeap = new BinaryHeap(10);
+        maxHeap.insert(10);
+        maxHeap.insert(4);
+        maxHeap.insert(9);
+        maxHeap.insert(1);
+        maxHeap.insert(7);
+        maxHeap.insert(5);
+        maxHeap.insert(3);
+
+
+        maxHeap.printHeap();
+        maxHeap.delete(5);
+        maxHeap.printHeap();
+        maxHeap.delete(2);
+        maxHeap.printHeap();
+    }
+}
+
+~~~
