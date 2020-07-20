@@ -576,3 +576,49 @@ public class BinaryHeap {
 }
 
 ~~~
+
+### 5. JDK中的堆-优先队列PriorityQueue
+
+PriorityQueue默认是一个小顶堆,然而可以通过传入自定义的Comparator函数来实现大顶堆
+~~~java
+public class CmowerNameComparator implements Comparator<Cmower> {
+    @Override
+    public int compare(Cmower o1, Cmower o2) {
+        if (o1.getName().hashCode() < o2.getName().hashCode()) {
+            return -1;
+        } else if (o1.getName().hashCode() == o2.getName().hashCode()) {
+            return 0;
+        }
+        return 1;
+    }
+}
+=============================================================================
+Cmower wanger = new Cmower(19,"沉默王二");
+Cmower wangsan = new Cmower(16,"沉默王三");
+Cmower wangyi = new Cmower(28,"沉默王一");
+
+List<Cmower> list = new ArrayList<>();
+list.add(wanger);
+list.add(wangsan);
+list.add(wangyi);
+
+list.sort(new CmowerComparator());
+
+for (Cmower c : list) {
+    System.out.println(c.getName());
+}
+
+输出的结果
+沉默王三
+沉默王二
+沉默王一
+
+所有运算都是 o1 在前 ，o2 在后
+
+o1 - o2 < 或 -1 降序
+o1 - o2 > 或 1 升序
+
+升序o1-o2 (默认o1较大， 正关系)
+降序o2-o1 (默认o1较大， 反关系)
+当返回值大于0时就会交换位置，当返回值小于=0时就不会交换位置。所以当返回值是o1-o2时，o1-o2大于0时即o1>o2，就会交换位置，从而达到升序，返回值为o2-o1时就一样原理
+~~~
