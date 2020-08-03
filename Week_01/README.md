@@ -1,6 +1,51 @@
 学习笔记
 
 
+## ArrayLsit 数组
+
+1.  特性
+由于是连续内存空间分配，在索引查找性能很快，在随机插入或者删除方面需要挪动该元素的后半部分数据，所以性能较差，是一种比较简单数据结构。
+2.  时间复杂度
+索引查找Access->O(1)
+元素查找Search->O(n) 
+元素插入Insertion->O(n) //在数据开头插入是最坏情况o(n), 在结尾插入则是o(1),平均是o(n)
+元素删除Deletion->O(n) //在数据开头删除是最坏情况o(n), 在结尾插入则是o(1),平均是o(n)
+
+ArrayList具备initialCapacity属性，初始值为10，扩大后为16，既扩容后的大小= 原始大小+原始大小/2 + 1 （1.5倍方式扩容       ）
+3.  常用接口
+x.get(index);
+x.add(实体);
+迭代器
+
+##  LinkedList 链表
+1.  特性
+实现的方式是链表，结构体中有成员变量中指向另一个节点的引用，因此在插入和删除方面性能较好。
+可以当作queue来使用，addFirst(),getFirst(),removeFirst()等可以实现其**先进先出**的功能。
+可以当作stack来使用，addLast(),getLast(),removeLast()等可以实现其**后进先出**的功能。
+大部分没有强调First或Last的接口默认都是是队列头(First),pop push是把队列头看作是栈顶，poll是队列头。
+
+linkedlist没有初始化大小，所以没有扩容一说法。
+2.  时间复杂度
+索引查找Access->O(n) //只能通过遍历
+元素查找Search->O(n) 
+元素插入Insertion->O(1) //在知道需要在哪个节点前后插入情况下进行插入下，只需要更改相关节点的索引，像头节点这样的插入是O(1)
+元素删除Deletion->O(1) //在知道需要在哪个节点前后插入情况下进行删除下，只需要更改相关节点的索引，像头节点这样的删除是O(1)
+
+3.  常用API
+x.addAll() //可以插入一个集合
+x.addFirst() //
+x.addLast() //
+x.​remove() // 删除队列头或者指定元素
+x.removeFirst()
+x.removeLast() 
+x.pop() //stack的用法在队列头删除
+x.push() // stack的用法在队列头添加
+
+Exception|NULL
+:---|:---
+add(push)|offer
+remove(pop)|poll
+element|peek
 
 =======================================================================
 
@@ -20,7 +65,7 @@ Queue只是一个接口，实现它的类有LinkedList，PriorityQueue，LinkedB
 
 PriorityQueue的构造函数可以传入比较器Comparator子类对象，作为元素排序比较的使用。
 
-
+升序 o1 - 02 降序 o2 - o1
 
 <3>
 

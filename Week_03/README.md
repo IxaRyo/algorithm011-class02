@@ -20,7 +20,7 @@ public void recur(int level, param){
 }
 ~~~
 
-## 分支模板
+## 分治模板
 
 ~~~java
 
