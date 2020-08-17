@@ -1,15 +1,185 @@
 学习笔记
 
 
+## 位运算基础
+
+含义|运算符|示例
+--|--|--
+左移|<<|0011 => 0110
+右移|>>|0110 => 0011
+取反|~| ~1 = 0
+
+含义|运算符|示例
+--|--|--
+按位或|<<|0011 \| 1011 = 1011
+按位与|&|0011 & 1011 = 0011
+按位取反|~|0011 => 1100
+按位异或|^|0011 ^ 1011 = 1000
+
+异或操作：
+
+~~~java
+
+x ^ 0 = x;
+x ^ 1s = ~x; //注意 1s = ~0
+x ^ (~x) = 1s
+x ^ x = 0
+c = a ^ b => a ^ c = b, b ^ c = a // 交换两个数
+a ^ b ^ c = a ^ (b ^ c) = (a ^ b) ^ c
+~~~
+
+### 1 指定位置的位运算
+
+~~~java
+将x最右边的n位清零        x & (~0 << n)
+获取x的第n位的值(0或者1)  (x >> n) & 1
+获取x第n位的幂值          x & (1 << n)
+仅将第n位置为1           x | (1 << n)
+仅将第n位置位0           x & (~(1<< n))
+将x最高位至n位（含）清零  x & ((1 << n) - 1)
+
+判断奇偶性
+x % 2 == 1 ---  (x & 1) == 1
+x % 2 == 0 ---  (x & 1) == 0
 
 
+x >> 1 ---- x / 2 
+即： x = x / 2; --- x = x >> 1;
+    mid = (left + right) / 2 --- mid = (left + right ) >> 1;
+
+x = x & (x - 1) 清零最低位的1
+x & -x 得到最低位的 1
+
+x & ~x = 0
+~~~
+
+x & (x - 1)示意图
+
+[位1的个数](pic/位1的个数.png)
+
+
+2的幂是指 二进制位中除了第0位，有且仅有1个1的情况
+
+
+## LRU分析
+
+简单的说，就是保证基本的get和set的功能的同时，还要**保证最近访问(get或put)的节点保持在限定容量的Cache**中，如果超过容量则应该把LRU(近期最少使用)的节点删除掉。
+
+那么我们思考一个问题：如何设计实现一个LRU Cache？
+那么，我们可能需要使用类似这样的数据结构去实现这个LRU Cache：
+
+![LRU](pic/LRU.png)
+
+对一个Cache的操作无非三种：插入(insert)、替换(replace)、查找（lookup）
+
+为了能够快速删除最久没有访问的数据项和插入最新的数据项，我们使用 双向链表 连接Cache中的数据项，并且保证链表维持数据项从最近访问到最旧访问的顺序。
+
+**插入(insert)**
+当Cache未满时，新的数据项只需插到双链表头部即可。时间复杂度为.
+
+**替换(replace) = insert + delete**
+当Cache已满时，将新的数据项插到双链表头部，并删除双链表的尾结点即可。时间复杂度为.
+
+**查找（lookup）**
+每次数据项被查询到时，都将此数据项移动到链表头部。
+
+经过分析，我们知道使用双向链表可以保证插入和替换的时间复杂度是，但查询的时间复杂度是，因为需要对双链表进行遍历。为了让查找效率也达到，很自然的会想到使用 **hash table** 。
+
+~~~java
+public class LRUCache {
+
+    class DLinkedNode {
+        int key;
+        int value;
+        DLinkedNode prev;
+        DLinkedNode next;
+        public DLinkedNode() {}
+        public DLinkedNode(int key, int value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+
+    private Map<Integer, DLinkedNode> cache = new HashMap<>();
+    private int size;
+    private int capacity;
+    private DLinkedNode head, tail;
+
+    public LRUCache(int capacity) {
+        this.size = 0;
+        this.capacity = capacity;
+        //使用伪头部和伪尾
+        head = new DLinkedNode();
+        tail = new DLinkedNode();
+        head.next = tail;
+        tail.prev = head;
+    }
+
+    public int get(int key) {
+        DLinkedNode node = cache.get(key);
+        if (node == null) {
+            return -1;
+        }
+        // 如果 key 存在，先通过哈希表定位，再移动到头部
+        moveToHead(node);
+        return node.value;
+    }
+
+    public void put(int key, int value) {
+        DLinkedNode node = cache.get(key);
+        if (node == null) {
+            //如果key不存在，创建一个新的节点
+            DLinkedNode newNode = new DLinkedNode(key, value);
+            cache.put(key, newNode);
+            addToHead(newNode);
+            ++size;
+            if (size > capacity) {
+                //如果超出容量，删除双向链表的尾部节点
+                DLinkedNode tail = removeTail();
+                // 删除哈希表中的对应项
+                cache.remove(tail.key);
+                --size;
+            }
+        }
+        else {
+            node.value = value;
+            moveToHead(node);
+        }
+    }
+
+    private void addToHead(DLinkedNode node) {
+        node.prev = head;
+        node.next = head.next;
+        head.next.prev = node;
+        head.next = node;
+    }
+
+    private void removeNode(DLinkedNode node) {
+        node.next.prev = node.prev;
+        node.prev.next = node.next;
+    }
+    private DLinkedNode removeTail() {
+        DLinkedNode res = tail.prev;
+        removeNode(res);
+        return res;
+    }
+
+
+    private void moveToHead(DLinkedNode node) {
+        removeNode(node);
+        addToHead(node);
+    }
+
+
+}
+~~~
 
 
 ## 排序
 
 各种排序时间复杂度：
 
-[sort](pic/sort.png)
+![sort](pic/sort.png)
 
 比较类排序：
 通过比较来决定元素间相对次序，由于其时间复杂度不能突破O(nlogn),因此也称为非线性时间比较类排序
